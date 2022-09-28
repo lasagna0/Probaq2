@@ -1,0 +1,266 @@
+---
+title: "Mercado de automóviles para Barranquilla "
+author: "David A. Sanchez Polo"
+date: "`r Sys.Date()`"
+output:
+  prettydoc::html_pretty:
+    theme: leonids
+    highlight: github
+vignette: >
+  %\VignetteIndexEntry{Mercado de automóviles para Barranquilla}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "/Users/davidalejandro/Scripts-de-Probarranquilla-1/")
+getwd()
+library(htmltools)
+```
+## Objetivo 
+
+Mediante el siguiente requerimiento se busca otorgar información acerca del mercado de manufactura de autopartes, teniendo relevancia en el sector de automóviles eléctricos. 
+
+
+```{r, include=FALSE}
+setwd("/Users/davidalejandro/Scripts-de-Probarranquilla-1")
+library(readxl)
+bd=read_excel("BD FOTOGRAFICA 2021.xlsx")
+head(bd)
+bd_autopar=subset(bd, grepl("C291000", bd$CIIU)|grepl("C292000 - FABRICACION DE CARROCERIAS PARA VEHICULOS AUTOMOTORES; FABRICACION DE REMOLQUES Y SEMIRREMOLQUES", bd$CIIU)|grepl("C293000", bd$CIIU))
+table(bd_autopar$CIIU)
+library(tidyverse)
+library(DT)
+library(gtExtras)
+library(gt)
+library(highcharter)
+key="AIzaSyBmzvUtFPEJn8OpnlaL6R9vVf4xAog3yWg"
+```
+
+
+
+
+Teniendo en cuenta diferentes empresas establecidas en la ciudad de Barranquilla para el año 2021, se filtran aquellas pertenecientes a C291000 correspondiente a **FABRICACIÓN DE VEHÍCULOS AUTOMOTORES Y SUS MOTORES** ; C292000 de **FABRICACIÓN DE CARROCERÍAS PARA VEHÍCULOS AUTOMOTORES** y C293000 de **FABRICACIÓN DE PARTES, PIEZAS (AUTOPARTES) Y ACCESORIOS (LUJOS) PARA VEHÍCULOS AUTOMOTORES**. Se encuentra una distribución de empresas en la siguiente manera:
+
+```{r, echo=FALSE}
+autopar=bd_autopar %>% group_by(CIIU) %>% summarise("Numero de emresas"=n())
+(autopar) %>% 
+  gt() %>% 
+  gt_theme_nytimes() %>% 
+  tab_header(title = "Tabla de número de empresas por CIIU")
+  t1=(autopar) %>% 
+  gt() %>% 
+  gt_theme_nytimes() %>% 
+  tab_header(title = "Tabla de número de empresas por CIIU")
+```
+
+
+
+Se es de notar que la ciudad, es mayoritariamente una ciudad productora de autopartes y no tan ensambladora de automóviles, siendo reconocida en su fabricación de carrocerías (C292000)
+
+Siendo así, un mercado segmentado porcentualmente de la siguiente manera:
+
+```{r, echo=FALSE}
+bd_autopar3=bd_autopar %>% group_by(CIIU) %>% summarise("Numero de empresas"=n()) %>% mutate("Porcentaje"=round(`Numero de empresas`/sum(`Numero de empresas`)*100,2))
+bd_autopar3 %>% hchart("pie",hcaes( x=bd_autopar3$CIIU, y=bd_autopar3$Porcentaje), tooltip=list(valueSuffix = "%"), name="Distribución de empresas por CIIU", title="Distribución de empresas por CIIU") %>% hc_title(text = "Distribución de empresas por CIIU") %>% hc_plotOptions(pie = list(dataLabels = list(enabled = TRUE, format = "{point.name}: {point.percentage:.1f} %")))
+g1=bd_autopar3 %>% hchart("pie",hcaes( x=bd_autopar3$CIIU, y=bd_autopar3$Porcentaje), tooltip=list(valueSuffix = "%"), name="Distribución de empresas por CIIU", title="Distribución de empresas por CIIU") %>% hc_title(text = "Distribución de empresas por CIIU") %>% hc_plotOptions(pie = list(dataLabels = list(enabled = TRUE, format = "{point.name}: {point.percentage:.1f} %")))
+
+```
+
+
+Econtrando un listado navegable de las siguientes empresas:
+
+```{r, echo=FALSE}
+bd_autopar2=bd_autopar %>% select(RAZON_SOCIAL,CIIU)
+datatable(bd_autopar2, options = list(pageLength = 5))
+```
+
+# Análisis de CIIU
+
+Revisando datos de empresas que exporten automóviles o autopartes, encontramos las siguientes estadísticas:
+
+```{r, echo=FALSE}
+setwd("/Users/davidalejandro/Scripts-de-Probarranquilla-1")
+
+exportadores21=read_excel("Treid.co-a_rmocabgrrnptim1uaaoci32q copy.xlsx", skip=5)
+exportadores21auto=subset(exportadores21, grepl("2910", exportadores21$CIIU)|grepl("2920", exportadores21$CIIU)|grepl("2930", exportadores21$CIIU))
+autoparEXP=exportadores21auto %>% group_by(CIIU) %>% summarise("Numero de emresas"=n())
+(autoparEXP) %>% 
+  gt() %>% 
+  gt_theme_nytimes() %>% 
+  tab_header(title = "Tabla de número de empresas exportadoras por CIIU")
+t2=(autoparEXP) %>% 
+  gt() %>% 
+  gt_theme_nytimes() %>% 
+  tab_header(title = "Tabla de número de empresas exportadoras por CIIU")
+```
+
+En estos no se encuentran exportaciones del CIUU más relevante de la ciudad (C292000), siendo este un posible resultado del mercado internacional y sus ventajas comparativas. No obstante, un mercado interesante de explorar, debido a su mayor flujo de empresas, es el mercado de autopartes. Aun así, existe un mercado interesante que sería el de la producción de automóviles, ya que existe exportación en Barranquilla de estos bienes, aun así, no existe productores en la localidad, lo que podría ser provechoso a la entrada de participantes, a causa de la falta de competencia y costos menores por cercanía al puerto. 
+
+Para el CIUU de G452000 **MANTENIMIENTO Y REPARACIÓN DE VEHÍCULOS AUTOMOTORES** se encuentra la siguiente distribución de empresas:
+```{r, echo=FALSE}
+bd_autoparserv=subset(bd, grepl("G452000", bd$CIIU))
+autoparSERV=bd_autoparserv %>% group_by(CIIU) %>% summarise("Numero de emresas"=n())
+(autoparSERV) %>% 
+  gt() %>% 
+  gt_theme_nytimes() %>% tab_header(title = "Numero de empresas reportadas")
+t3=(autoparSERV) %>% 
+  gt() %>% 
+  gt_theme_nytimes() %>% tab_header(title = "Numero de empresas reportadas")
+
+```
+
+# Análisis de exportaciones para cargadores de origen Atlántico
+
+```{r, echo=FALSE}
+basecom=read_excel("Treid.co-AAA_uwlk2z1zkp0xxrgybgflclbc (2).xlsx", skip = 5)
+selectcarg=basecom %>% subset(grepl("8504", basecom$`Partida arancel`)&grepl("ATLANTICO", basecom$`Departamento origen`)&grepl("850440", basecom$`Subpartida arancel`)) 
+selectcarg_summ=selectcarg%>% group_by(`Año declaración`) %>% summarise("FOB USD"=sum(`FOB USD`))
+selectcarg_summ %>% 
+  gt() %>% 
+  gt_theme_nytimes() %>% 
+  tab_header(title = "Tabla de FOB USD por año de declaración")
+  t4=selectcarg_summ %>% 
+  gt() %>% 
+  gt_theme_nytimes() %>% 
+  tab_header(title = "Tabla de FOB USD por año de declaración")
+  ## add labels with value in the plot
+selectcarg_summ %>% hchart("line",hcaes( x=selectcarg_summ$`Año declaración`, y=selectcarg_summ$`FOB USD`), tooltip=list(valueSuffix = "FOB USD"), name="Valor", title="FOB USD") %>% hc_title(text = "EVOLUCION DE EXPORTACION DE CARGADORES") %>% hc_yAxis(title = list(text = "FOB USD"))  %>% hc_xAxis(title = list(text = "Año declaración"))  
+g2=selectcarg_summ %>% hchart("line",hcaes( x=selectcarg_summ$`Año declaración`, y=selectcarg_summ$`FOB USD`), tooltip=list(valueSuffix = "FOB USD"), name="Valor", title="FOB USD") %>% hc_title(text = "EVOLUCION DE EXPORTACION DE CARGADORES") %>% hc_yAxis(title = list(text = "FOB USD"))  %>% hc_xAxis(title = list(text = "Año declaración"))  
+
+```
+
+## Destino de exportaciones de cargadores de 2021
+
+Se reporta que, únicamente se exporto a Estados Unidos estos bienes de cargadores, saliendo del departamento del Atlántico para el año 2021.
+
+
+```{r, echo=FALSE}
+selectcarg2021=basecom %>% subset(grepl("8504", basecom$`Partida arancel`)&grepl("ATLANTICO", basecom$`Departamento origen`)&grepl("850440", basecom$`Subpartida arancel`)&grepl("2021", basecom$`Año declaración`))
+selectcarg2021_summ=selectcarg2021%>% group_by(`País destino`) %>% summarise("FOB USD"=sum(`FOB USD`))
+selectcarg2021_summ %>% 
+  gt() %>% 
+  gt_theme_nytimes() %>% 
+  tab_header(title = "Tabla de FOB USD por año de declaración")
+t5=selectcarg2021_summ %>% 
+  gt() %>% 
+  gt_theme_nytimes() %>% 
+  tab_header(title = "Tabla de FOB USD por año de declaración")
+```
+
+# Análisis para baterías de Litio de origen Atlántico
+
+***No existe datos para 2019 de estas exportaciones para el Atlántico***
+
+```{r, echo=FALSE}
+basecom=read_excel("Treid.co-AAA_uwlk2z1zkp0xxrgybgflclbc (2).xlsx", skip = 5)
+selectbaterias=basecom %>% subset(grepl("8507", basecom$`Partida arancel`)&grepl("ATLANTICO", basecom$`Departamento origen`)&grepl("850760", basecom$`Subpartida arancel`))
+selectbaterias_summ=selectbaterias%>% group_by(`Año declaración`) %>% summarise("FOB USD"=sum(`FOB USD`))
+selectbaterias_summ %>% 
+  gt() %>% 
+  gt_theme_nytimes() %>% 
+  tab_header(title = "Tabla de promedio de FOB USD por año de declaración")
+t6=selectbaterias_summ %>% 
+  gt() %>% 
+  gt_theme_nytimes() %>% 
+  tab_header(title = "Tabla de promedio de FOB USD por año de declaración")
+selectbaterias_summ %>% hchart("line",hcaes( x=selectbaterias_summ$`Año declaración`, y=selectbaterias_summ$`FOB USD`), tooltip=list(valueSuffix = "FOB USD"), name="Valor", title="FOB USD") %>% hc_title(text = "EVOLUCION DE EXPORTACION DE BATERIAS") %>% hc_yAxis(title = list(text = "FOB USD"))  %>% hc_xAxis(title = list(text = "Año declaración"))
+g3=selectbaterias_summ %>% hchart("line",hcaes( x=selectbaterias_summ$`Año declaración`, y=selectbaterias_summ$`FOB USD`), tooltip=list(valueSuffix = "FOB USD"), name="Valor", title="FOB USD") %>% hc_title(text = "EVOLUCION DE EXPORTACION DE BATERIAS") %>% hc_yAxis(title = list(text = "FOB USD"))  %>% hc_xAxis(title = list(text = "Año declaración"))
+```
+## Destino de exportaciones de baterías de Litio de 2020
+```{r, echo=FALSE}
+selectbaterias2021=basecom %>% subset(grepl("8507", basecom$`Partida arancel`)&grepl("ATLANTICO", basecom$`Departamento origen`)&grepl("850760", basecom$`Subpartida arancel`)&grepl("2020", basecom$`Año declaración`))
+selectbaterias2021_summ=selectbaterias2021%>% group_by(`País destino`) %>% summarise("FOB USD"=sum(`FOB USD`))
+selectbaterias2021_summ %>% 
+  gt() %>% 
+  gt_theme_nytimes() %>% 
+  tab_header(title = "Tabla de FOB USD por año de declaración")
+t7=selectbaterias2021_summ %>% 
+  gt() %>% 
+  gt_theme_nytimes() %>% 
+  tab_header(title = "Tabla de FOB USD por año de declaración")
+```
+
+# Análisis para exportaciones de autopartes de origen Atlántico
+    
+```{r, echo=FALSE}
+selectautopart=basecom %>% subset(grepl("FABRICACION DE PARTES, PIEZAS Y ACCESORIOS PARA VEHICULOS AUTOMOTORES", basecom$`Subsector`)&grepl("ATLANTICO", basecom$`Departamento origen`))
+```
+
+## Exportaciones de autopartes por año
+
+```{r, echo=FALSE}
+selectautopart_summ=selectautopart%>% group_by(`Año declaración`) %>% summarise("FOB USD"=sum(`FOB USD`))
+selectautopart_summ %>% 
+  gt() %>% 
+  gt_theme_nytimes() %>% 
+  tab_header(title = "Tabla de FOB USD por año de declaración")
+t8=selectautopart_summ %>% 
+  gt() %>% 
+  gt_theme_nytimes() %>% 
+  tab_header(title = "Tabla de FOB USD por año de declaración")
+selectautopart_summ %>% hchart("line",hcaes( x=selectautopart_summ$`Año declaración`, y=selectautopart_summ$`FOB USD`), tooltip=list(valueSuffix = "FOB USD"), name="Valor", title="FOB USD") %>% hc_title(text = "EVOLUCION DE EXPORTACION DE AUTOPARTES") %>% hc_yAxis(title = list(text = "FOB USD"))  %>% hc_xAxis(title = list(text = "Año declaración"))
+g4=selectautopart_summ %>% hchart("line",hcaes( x=selectautopart_summ$`Año declaración`, y=selectautopart_summ$`FOB USD`), tooltip=list(valueSuffix = "FOB USD"), name="Valor", title="FOB USD") %>% hc_title(text = "EVOLUCION DE EXPORTACION DE AUTOPARTES") %>% hc_yAxis(title = list(text = "FOB USD"))  %>% hc_xAxis(title = list(text = "Año declaración"))
+library(stringr)
+# delete all characters before -
+selectautopart2=selectautopart %>% mutate(`Subpartida arancel`=str_replace(`Subpartida arancel`,".*-",""))
+## exportaciones de autopartes para 2021
+selectautopart2021=selectautopart2 %>% subset(grepl("2021", selectautopart$`Año declaración`))
+selectautopart2021_summ=selectautopart2021%>% group_by(`Subpartida arancel`) %>% summarise("FOB USD"=sum(`FOB USD`))
+# percentage
+
+selectautopart2021_summ$`PER USD` <- (selectautopart2021_summ$`FOB USD`/sum(selectautopart2021_summ$`FOB USD`))*100
+## pie chart with percentage in labels  
+selectautopart2021_summ %>% hchart("pie",hcaes( x=selectautopart2021_summ$`Subpartida arancel`, y=selectautopart2021_summ$`PER USD`), tooltip=list(valueSuffix = "%"), name="Valor", title="FOB USD") %>% hc_title(text = "PROPORCION DE AUTOPARTES PRODUCIDAS EN ATLANTICO 2021") %>% hc_yAxis(title = list(text = "FOB USD"))  %>% hc_xAxis(title = list(text = "Año declaración")) %>% hc_plotOptions(pie = list(dataLabels = list(enabled = TRUE, format = "{point.name}: {point.percentage:.1f} %")))
+g5=selectautopart2021_summ %>% hchart("pie",hcaes( x=selectautopart2021_summ$`Subpartida arancel`, y=selectautopart2021_summ$`PER USD`), tooltip=list(valueSuffix = "%"), name="Valor", title="FOB USD") %>% hc_title(text = "PROPORCION DE AUTOPARTES PRODUCIDAS EN ATLANTICO 2021") %>% hc_yAxis(title = list(text = "FOB USD"))  %>% hc_xAxis(title = list(text = "Año declaración")) %>% hc_plotOptions(pie = list(dataLabels = list(enabled = TRUE, format = "{point.name}: {point.percentage:.1f} %")))
+
+library(highcharter)
+library(tidyverse)
+library(webshot)
+
+save_html(g1, "g1.html")
+webshot(url = "g1.html", 
+        file = "g1.png",
+        delay=4) # delay will ensure that the whole plot appears in the image
+dev.off()
+save_html(g2, "g2.html")
+webshot(url = "g2.html", 
+        file = "g2.png",
+        delay=4) # delay will ensure that the whole plot appears in the image
+dev.off()
+save_html(g3, "g3.html")
+webshot(url = "g3.html", 
+        file = "g3.png",
+        delay=4) # delay will ensure that the whole plot appears in the image
+dev.off()
+save_html(g4, "g4.html")
+webshot(url = "g4.html", 
+        file = "g4.png",
+        delay=4) # delay will ensure that the whole plot appears in the image
+dev.off()
+save_html(g5, "g5.html")
+webshot(url = "g5.html", 
+        file = "g5.png",
+        delay=4) # delay will ensure that the whole plot appears in the image
+dev.off()
+
+
+
+
+
+```
+
+
+```
+
+              
+```
+
+## Numero de electrolineras en el país. 
+
+
+Teniendo en cuenta los datos encontrados en https://map.electromaps.com/es/, se encuentra para el 19 de sept-22 215 localizaciones, con 498 conectores, alrededor del territorio nacional. 
+
+
+Fuente: https://www.electromaps.com/puntos-de-recarga/colombia
